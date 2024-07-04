@@ -1,42 +1,56 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, Alert } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 const numColumns = 2;
-const cardWidth = (width - (numColumns + 1) * 10) / numColumns; // Adjust card width based on the number of columns and padding
+const cardWidth = (width - (numColumns + 1) * 10) / numColumns;
 
-export default function Product({ navigation }) {
-    const [products, setProducts] = useState([]);
+const Product = ({ navigation }) => {
+    const [restaurants, setRestaurants] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const getProducts = async () => {
-            const URL = 'https://instaeat.azurewebsites.net/api/Restaurant';
-            const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGVzdHJlc3RhdXJhbnQiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiIyIiwiZXhwIjoxNzIwMTEyNTEzfQ.paldGFEgydPgV9l597VlD7wSpYnDnpd6fHGEjdBzFMY';
-            try {
-                const response = await fetch(URL, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${TOKEN}`
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                setProducts(data);
-            } catch (error) {
-                setError(error.message);
-                console.error('Error fetching products:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        getProducts();
+        fetchRestaurants();
     }, []);
+
+    const fetchRestaurants = async () => {
+        try {
+            // Replace with your login credentials
+            const loginData = {
+                username: 'nam1',
+                password: 'nam123456'
+            };
+
+            // Make a POST request to login and get token
+            const loginURL = 'https://instaeat.azurewebsites.net/api/Account/login';
+            const loginResponse = await axios.post(loginURL, loginData);
+
+            const token = loginResponse.data.token;
+            console.log('Retrieved token:', token);
+            if (!token) {
+                navigation.navigate('Login');
+                return; 
+            }
+
+            const restaurantsURL = 'https://instaeat.azurewebsites.net/api/Restaurant';
+            const response = await axios.get(restaurantsURL, {
+                 headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }); 
+            setRestaurants(response.data.items);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching restaurants:', error);
+            setError(error.message); 
+            setLoading(true);
+            Alert.alert('Error', 'Failed to fetch restaurants. Please try again.');
+        } 
+    };
 
     const styles = StyleSheet.create({
         container: {
@@ -46,8 +60,10 @@ export default function Product({ navigation }) {
         },
         card: {
             width: cardWidth,
-            height: 250, // Fixed height for each card
+            height: 250, 
             borderRadius: 10,
+            borderWidth: 1,
+            borderColor: '#000', // Màu đen
             padding: 10,
             margin: 5,
             backgroundColor: '#fff',
@@ -56,7 +72,7 @@ export default function Product({ navigation }) {
             shadowOpacity: 0.8,
             shadowRadius: 2,
             elevation: 1,
-            justifyContent: 'center', // Ensure content is centered
+            justifyContent: 'center',
         },
         image: {
             width: '100%',
@@ -67,24 +83,24 @@ export default function Product({ navigation }) {
             fontSize: 18,
             fontWeight: 'bold',
             marginVertical: 10,
-            textAlign: 'center', // Center text horizontally
+            textAlign: 'center',
         },
         TitleRestaurant: {
             fontSize: 24,
             fontWeight: 'bold',
             marginBottom: 10,
-            textAlign: 'center', // Center title horizontally
+            textAlign: 'center',
         },
         description: {
-            textAlign: 'center', // Center description horizontally
+            textAlign: 'center',
         },
     });
 
     const renderItem = ({ item }) => (
-        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Detail')}>
-            <Image source={{ uri: item.image }} style={styles.image} />
-            <Text style={styles.title}>{item.name}</Text>
-            <Text style={styles.description}>{item.description}</Text>
+        <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Detail', { restaurantId: item.restaurantId })}>
+            <Image style={styles.image} source={{ uri: item.image }} />
+            <Text style={styles.title}>{item.restaurantName}</Text>
+            <Text style={styles.description}>{item.address}</Text>
         </TouchableOpacity>
     );
 
@@ -98,14 +114,16 @@ export default function Product({ navigation }) {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.TitleRestaurant}>Quán ăn:</Text>
+            <Text style={styles.TitleRestaurant}>Danh sách nhà hàng:</Text>
             <FlatList
-                data={products}
+                data={restaurants}
                 renderItem={renderItem}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item) => item.restaurantId.toString()}
                 contentContainerStyle={{ paddingBottom: 20 }}
                 numColumns={numColumns}
             />
         </View>
     );
-}
+};
+
+export default Product;

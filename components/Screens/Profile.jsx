@@ -1,179 +1,168 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import axios from 'axios';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const Profile = ({ navigation }) => {
     const [userData, setUserData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [token, setToken] = useState(null);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchTokenAndUserData = async () => {
             try {
-                const token = await AsyncStorage.getItem('userToken');
-                if (!token) {
-                    navigation.navigate('Login'); // Redirect to login if no token is found
-                    return;
-                }
+                const loginUrl = 'https://instaeat.azurewebsites.net/api/Account/login';
+                const loginData = {
+                    username: 'nam1',
+                    password: 'nam123456'
+                };
 
-                const url = 'https://instaeat.azurewebsites.net/api/Account';
-                const response = await axios.get(url, {
+                const response = await fetch(loginUrl, {
+                    method: 'POST',
                     headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
                 });
 
-                setUserData(response.data.items[0]); // Assuming only one user is returned
+                if (!response.ok) {
+                    throw new Error('Failed to authenticate');
+                }
+
+                const loginResponse = await response.json();
+                const retrievedToken = loginResponse.token;
+
+                if (!retrievedToken) {
+                    throw new Error('Token not found in response');
+                }
+
+                await AsyncStorage.setItem('userToken', retrievedToken);
+                setToken(retrievedToken);
+
+                // Fetch user data using the retrieved token
+                fetchUserData(retrievedToken);
             } catch (error) {
-                console.error('Error fetching user data:', error);
+                console.error('Error fetching token:', error);
+                Alert.alert('Error', 'Failed to authenticate. Please try again.');
+                setLoading(false); // Set loading to false to stop the loading indicator
             }
         };
 
-        fetchData();
+        fetchTokenAndUserData();
     }, []);
 
-    return (
-        <View style={styles.body}>
-            <View style={styles.container}>
-                <Text style={styles.header}>{userData ? userData.name : ''}</Text>
-                <TouchableOpacity onPress={async () => {
-                    await AsyncStorage.removeItem('userToken');
-                    navigation.navigate('Login');
-                }}>
-                    <TouchableOpacity style={styles.restaurant}  onPress={() => navigation.navigate('UpdateToRestaurant')}>
-                      <Text>Đăng ký làm nhà hàng</Text>
-                    </TouchableOpacity>
-                </TouchableOpacity>
+    const fetchUserData = async (token) => {
+        try {
+            const userUrl = 'https://instaeat.azurewebsites.net/api/Account';
+            const userResponse = await fetch(userUrl, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            console.log(token)
+            if (!userResponse.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+
+            const userDataResponse = await userResponse.json();
+
+            if (userDataResponse.items && userDataResponse.items.length > 0) {
+                // Find the user with username 'nam1' (assuming it's unique)
+                const user = userDataResponse.items.find(user => user.username === 'nam1');
+                if (user) {
+                    setUserData(user);  
+                } else {
+                    console.error('User data not found for username "nam1"');
+                }
+            } else {
+                console.error('No user data found in API response');
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            Alert.alert('Error', 'Failed to fetch user data. Please try again.');
+        } finally {
+            setLoading(false); // Set loading to false after fetching user data
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            await AsyncStorage.removeItem('userToken');
+            setToken(null);
+            setUserData(null);
+            navigation.navigate('Login');
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="purple" />
             </View>
-            <Text style={styles.information}>Thông tin:</Text>
-            <Text style={styles.Username}>Tên đăng nhập: {userData ? userData.username : ''}</Text>
-            <Text style={styles.password}>Mật Khẩu: {userData ? userData.password : ''}</Text>
-            <Text style={styles.name}>Tên: {userData ? userData.name : ''}</Text>
-            <Text style={styles.number}>Số điện thoại: {userData ? userData.phone : ''}</Text>
-            <TouchableOpacity style={styles.voucherContainer}>
-                <Text style={styles.voucher}>
-                    <Image style={styles.image} source={require('../../assets/images/voucher.png')} /> Voucher
-                </Text>
-                <Image style={styles.arrowRight} source={require('../../assets/images/arrowright.png')} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.rewardPointerContainer}>
-                <Text style={styles.point}>
-                    <Image style={styles.imagePoint} source={require('../../assets/images/point.png')} /> Reward Point
-                </Text>
-                <Image style={styles.arrowRight} source={require('../../assets/images/arrowright.png')} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.LogoutContainer}>
-              <Text style={styles.logout}>Logout</Text>
+        ); 
+    }
+
+    return (
+        <View style={styles.container}>
+          <Text>{userData ? userData.name : 'N/A'}</Text>
+            <Text style={styles.sectionHeader}>Thông tin người dùng:</Text>
+            <Text style={styles.userInfo}>Tên đăng nhập: {userData ? userData.username : 'N/A'}</Text>
+            <Text style={styles.userInfo}>Tên: {userData ? userData.name : 'N/A'}</Text>
+            <Text style={styles.userInfo}>Số điện thoại: {userData ? userData.phone : 'N/A'}</Text>
+
+            <Text style={styles.tokenText}>Token: {token}</Text>
+
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                <Text style={styles.logoutText}>Đăng xuất</Text>
             </TouchableOpacity>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    body: {
-        backgroundColor: 'white',
-        width: '100%',
-        flex: 1,
-    },
     container: {
-        paddingTop: 73,
-        paddingLeft: 20,
-        paddingBottom: 20,
-        backgroundColor: 'purple',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+        flex: 1,
+        backgroundColor: 'white',
+        paddingHorizontal: 20,
+        paddingTop: 50,
     },
-    header: {
-        marginLeft: 20,
-        color: 'white',
-        fontSize: 15,
-        textTransform: 'uppercase',
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white',
     },
-    restaurant: {
-        color: 'white',
-        marginRight: 30,
-    },
-    information: {
-        marginTop: 40,
-        marginLeft: 5,
-    },
-    Username: {
-        marginLeft: 40,
+    sectionHeader: {
+        fontSize: 18,
+        fontWeight: 'bold',
         marginTop: 20,
+        marginBottom: 10,
     },
-    password: {
-        marginLeft: 40,
+    userInfo: {
+        fontSize: 16,
+        marginBottom: 10,
+    },
+    tokenText: {
+        fontSize: 14,
         marginTop: 10,
+        marginBottom: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 5,
     },
-    name: {
-        marginLeft: 40,
-        marginTop: 10,
-    },
-    number: {
-        marginLeft: 40,
-        marginTop: 10,
-    },
-    voucher: {
-        fontSize: 17,
-        marginLeft: 10,
-    },
-    voucherContainer: {
-        flexDirection: 'row',
-        marginTop: 50,
-        paddingBottom: 10,
-        paddingLeft: 10,
-        backgroundColor: 'orange',
-        elevation: 2,
+    logoutButton: {
+        marginTop: 20,
+        backgroundColor: 'purple',
+        padding: 10,
+        borderRadius: 5,
         alignItems: 'center',
-        justifyContent: 'space-between',
     },
-    image: {
-        width: 30,
-        height: 30,
-        marginLeft: 10,
+    logoutText: { 
+        color: 'white',
+        fontSize: 16,
     },
-    arrowRight: {
-        marginTop: 13,
-        width: 20,
-        height: 20,
-    },
-    rewardPointerContainer: {
-        flexDirection: 'row',
-        marginTop: 10,
-        paddingBottom: 10,
-        paddingLeft: 10,
-        backgroundColor: 'orange',
-        elevation: 2,
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    imagePoint: {
-        width: 20,
-        height: 20,
-        marginLeft: 10,
-    },
-    point: {
-        marginTop: 5,
-        marginLeft: 15,
-        fontSize: 17,
-    },
-    logout:{
-      marginTop:10,
-      marginBottom:10,
-      fontSize:23,
-      color:'white',
-    },
-    LogoutContainer: {
-      flexDirection: 'row',
-      marginTop: 300,
-      paddingBottom: 10,
-      paddingLeft: 150,
-      backgroundColor: 'gray',
-      elevation: 2,
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      width:'90%',
-      marginLeft:20,
-      borderRadius:5
-  },
 });
 
 export default Profile;

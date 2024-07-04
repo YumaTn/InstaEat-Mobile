@@ -11,6 +11,7 @@ import Photo from '../Screens/Product/Photo';
 import Signup from '../Screens/Login/Signup';
 import Home from './Home';
 import UpdateToRestaurant from '../Screens/Restaurant/UpdateToRestaurant'
+import Profile from './Profile';
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -54,6 +55,9 @@ export default function App() {
                 <Stack.Screen
                 name="UpdateToRestaurant"
                 component={UpdateToRestaurant}/>
+                <Stack.Screen
+                name="Profile"
+                component={Profile}/>
         </Stack.Navigator>
     );
 }

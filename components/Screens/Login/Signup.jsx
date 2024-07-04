@@ -1,10 +1,30 @@
-import { View, Text, StyleSheet, Image, TextInput, TouchableWithoutFeedback, Keyboard, TouchableOpacity } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, TextInput, TouchableWithoutFeedback, Keyboard, TouchableOpacity, Alert } from 'react-native';
+import axios from 'axios';
 
 const SignUp = ({ navigation }) => {
-    const [email, onChangeEmail] = React.useState('');
-    const [password, onChangePassword] = React.useState('');
-    const [confirmPassword, onChangeConfirmPassword] = React.useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+
+    const handleSignUp = async () => {
+      try {
+          const response = await axios.post('https://instaeat.azurewebsites.net/api/Account/register', {
+              username: username,
+              password: password,
+              name: name,
+              phone: phone.toString() // Ensure phone number is sent as a string
+          });
+  
+          console.log('Response from API:', response.data);
+          Alert.alert('Đăng ký thành công');
+          navigation.navigate('Login');
+      } catch (error) {
+          console.error('Error while signing up:', error);
+          Alert.alert('Đăng ký thất bại', error.message);
+      }
+  };
 
     const styles = StyleSheet.create({
         container: {
@@ -51,21 +71,9 @@ const SignUp = ({ navigation }) => {
             borderRadius: 5,
             marginVertical: 10,
         },
-        inputContainer2: {
-            position: 'absolute',
-            top: '48%',
-            width: '80%',
-            paddingHorizontal: 20,
-        },
-        inputContainer3: {
-          position: 'absolute',
-          top: '56%',
-          width: '80%',
-          paddingHorizontal: 20,
-      },
         button: {
             position: 'absolute',
-            top: '64%',
+            top: '66%',
             width: '20',
             padding: 15,
             backgroundColor: 'orange',
@@ -91,34 +99,38 @@ const SignUp = ({ navigation }) => {
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
-                        onChangeText={onChangeEmail}
-                        value={email}
-                        placeholder="Email ..."
+                        onChangeText={setName}
+                        value={name}
+                        placeholder="Tên ..."
                         placeholderTextColor="black"
-                        keyboardType="email-address"
+                        keyboardType="default"
                     />
-                </View>
-                <View style={styles.inputContainer2}>
                     <TextInput
                         style={styles.input}
-                        onChangeText={onChangePassword}
+                        onChangeText={setUsername}
+                        value={username}
+                        placeholder="Tên đăng nhập ..."
+                        placeholderTextColor="black"
+                        keyboardType="default"
+                    />
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={setPassword}
                         value={password}
                         placeholder="Mật khẩu ..."
                         placeholderTextColor="black"
                         secureTextEntry={true}
                     />
-                </View>
-                <View style={styles.inputContainer3}>
                     <TextInput
                         style={styles.input}
-                        onChangeText={onChangeConfirmPassword}
-                        value={confirmPassword}
-                        placeholder="Xác nhận mật khẩu ..."
+                        onChangeText={setPhone}
+                        value={phone}
+                        placeholder="Số điện thoại ..."
                         placeholderTextColor="black"
-                        secureTextEntry={true}
+                        keyboardType="phone-pad"
                     />
                 </View>
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity style={styles.button} onPress={handleSignUp}>
                     <Text style={styles.loginText}>Đăng Ký</Text>
                 </TouchableOpacity>
                 <Image source={require('../../../assets/images/Line 4.png')} />

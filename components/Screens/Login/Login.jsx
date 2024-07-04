@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TextInput, TouchableWithoutFeedback, Keyboard, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, Image, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = ({ navigation }) => {
@@ -37,18 +37,12 @@ const Login = ({ navigation }) => {
                 return;
             }
 
-            const token = await getToken();
-            if (!token) {
-                throw new Error('Token not found');
-            }
-
-            // Gọi API để kiểm tra đăng nhập
-            const URL = 'https://instaeat.azurewebsites.net/api/Account/Login'; // Thay đổi URL và phương thức phù hợp với API của bạn
+            // Call API to check login
+            const URL = 'https://instaeat.azurewebsites.net/api/Account/Login';
             const response = await fetch(URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     username: username,
@@ -57,16 +51,19 @@ const Login = ({ navigation }) => {
             });
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('Invalid credentials');
             }
 
             const data = await response.json();
-            const newToken = data.token; // Giả sử API trả về token mới, bạn cần điều chỉnh phụ thuộc vào API thực tế
+            const newToken = data.token; // Assuming your API returns a new token
 
-            // Lưu token mới vào AsyncStorage
-            await AsyncStorage.setItem('userToken', newToken);
+            // Store the token in AsyncStorage with 'Bearer' prefix
+            await AsyncStorage.setItem('userToken', `Bearer ${newToken}`);
+            
+            // Store the username in AsyncStorage for later use
+            await AsyncStorage.setItem('username', username);
 
-            // Chuyển hướng tới trang Home khi đăng nhập thành công
+            // Navigate to App component upon successful login
             navigation.navigate('Navigation');
         } catch (error) {
             console.error('Error:', error.message);
