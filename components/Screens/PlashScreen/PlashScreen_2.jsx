@@ -9,6 +9,7 @@ export default function PlashScreen_2({ navigation }) {
         <Image 
           source={require('../../../assets/images/Plash2.jpg')}
           style={styles.image}
+          fadeDuration={0}
         />
         <View style={styles.content}>
           <Text style={styles.text}>

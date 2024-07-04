@@ -1,18 +1,27 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { FlatList } from 'react-native-gesture-handler';
+
+const { width } = Dimensions.get('window');
+const numColumns = 2;
+const cardWidth = (width - (numColumns + 1) * 10) / numColumns; // Adjust card width based on the number of columns and padding
 
 export default function Product({ navigation }) {
     const [products, setProducts] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [numColumns, setNumColumns] = useState(2);
 
     useEffect(() => {
         const getProducts = async () => {
-            const URL = 'https://665d20c5e88051d60405794a.mockapi.io/Product';
+            const URL = 'https://instaeat.azurewebsites.net/api/Restaurant';
+            const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoidGVzdHJlc3RhdXJhbnQiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiIyIiwiZXhwIjoxNzIwMTEyNTEzfQ.paldGFEgydPgV9l597VlD7wSpYnDnpd6fHGEjdBzFMY';
             try {
-                const response = await fetch(URL);
+                const response = await fetch(URL, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${TOKEN}`
+                    }
+                });
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -36,7 +45,8 @@ export default function Product({ navigation }) {
             backgroundColor: '#f8f8f8',
         },
         card: {
-            flex: 1,
+            width: cardWidth,
+            height: 250, // Fixed height for each card
             borderRadius: 10,
             padding: 10,
             margin: 5,
@@ -46,6 +56,7 @@ export default function Product({ navigation }) {
             shadowOpacity: 0.8,
             shadowRadius: 2,
             elevation: 1,
+            justifyContent: 'center', // Ensure content is centered
         },
         image: {
             width: '100%',
@@ -56,6 +67,16 @@ export default function Product({ navigation }) {
             fontSize: 18,
             fontWeight: 'bold',
             marginVertical: 10,
+            textAlign: 'center', // Center text horizontally
+        },
+        TitleRestaurant: {
+            fontSize: 24,
+            fontWeight: 'bold',
+            marginBottom: 10,
+            textAlign: 'center', // Center title horizontally
+        },
+        description: {
+            textAlign: 'center', // Center description horizontally
         },
     });
 
@@ -63,7 +84,7 @@ export default function Product({ navigation }) {
         <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Detail')}>
             <Image source={{ uri: item.image }} style={styles.image} />
             <Text style={styles.title}>{item.name}</Text>
-            <Text>{item.description}</Text>
+            <Text style={styles.description}>{item.description}</Text>
         </TouchableOpacity>
     );
 
@@ -84,7 +105,6 @@ export default function Product({ navigation }) {
                 keyExtractor={(item) => item.id.toString()}
                 contentContainerStyle={{ paddingBottom: 20 }}
                 numColumns={numColumns}
-                key={numColumns}
             />
         </View>
     );

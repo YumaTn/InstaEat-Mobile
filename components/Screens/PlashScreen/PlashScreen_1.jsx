@@ -8,6 +8,7 @@ export default function PlashScreen_1({ navigation }) {
       <Image
         source={require('../../../assets/images/Plash1.jpg')}
         style={styles.image}
+        fadeDuration={0}
       />
       <Text style={styles.text}>
         Welcome to Food Check-in!{'\n'}Discover delicious dishes and exciting dining spots near you.

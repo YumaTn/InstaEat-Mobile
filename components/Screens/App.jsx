@@ -7,6 +7,10 @@ import Navigation from '../navigation/Navigation';
 import Login from './Login/Login';
 import ProductDetails from '../Screens/Product/ProductDetails';
 import Product from './Product/Product';
+import Photo from '../Screens/Product/Photo';
+import Signup from '../Screens/Login/Signup';
+import Home from './Home';
+import UpdateToRestaurant from '../Screens/Restaurant/UpdateToRestaurant'
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -38,6 +42,18 @@ export default function App() {
             <Stack.Screen
                 name="Product"
                 component={Product}/>
+            <Stack.Screen
+                name="photo"
+                component={Photo}/>
+                <Stack.Screen
+                name="SignUp"
+                component={Signup}/>
+                <Stack.Screen
+                name="Home"
+                component={Home}/>
+                <Stack.Screen
+                name="UpdateToRestaurant"
+                component={UpdateToRestaurant}/>
         </Stack.Navigator>
     );
 }
