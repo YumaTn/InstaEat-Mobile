@@ -33,7 +33,7 @@ const Login = ({ navigation }) => {
     const handleLogin = async () => {
         try {
             if (!username || !password) {
-                Alert.alert('Error', 'Please enter both username and password.');
+                Alert.alert('Vui lòng điền tên đăng nhập và mật khẩu');
                 return;
             }
 
@@ -157,7 +157,7 @@ const Login = ({ navigation }) => {
                         style={styles.input}
                         onChangeText={setUsername}
                         value={username}
-                        placeholder="Đăng nhập ..."
+                        placeholder="Tên đăng nhập "
                         placeholderTextColor="black"
                     />
                 </View>
@@ -166,7 +166,7 @@ const Login = ({ navigation }) => {
                         style={styles.input}
                         onChangeText={setPassword}
                         value={password}
-                        placeholder="Mật khẩu ..."
+                        placeholder="Mật khẩu "
                         placeholderTextColor="black"
                         secureTextEntry={true}
                     />

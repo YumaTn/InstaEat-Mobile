@@ -57,7 +57,7 @@
               style={styles.input}
               onChangeText={onChangeNumber}
               value={number}
-              placeholder="Đồ ăn,Quán Ăn,..."
+              placeholder="Món ăn, quán ăn,..."
               placeholderTextColor="black"
             />
           </View>

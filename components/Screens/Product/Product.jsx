@@ -19,29 +19,18 @@ const Product = ({ navigation }) => {
 
     const fetchRestaurants = async () => {
         try {
-            // Replace with your login credentials
-            const loginData = {
-                username: 'nam1',
-                password: 'nam123456'
-            };
-
-            // Make a POST request to login and get token
-            const loginURL = 'https://instaeat.azurewebsites.net/api/Account/login';
-            const loginResponse = await axios.post(loginURL, loginData);
-
-            const token = loginResponse.data.token;
+            const token = await AsyncStorage.getItem('userToken');
             console.log('Retrieved token:', token);
             if (!token) {
                 navigation.navigate('Login');
-                return; 
+                return;
             }
-
-            const restaurantsURL = 'https://instaeat.azurewebsites.net/api/Restaurant';
-            const response = await axios.get(restaurantsURL, {
-                 headers: {
-                    Authorization: `Bearer ${token}`
+            const URL = 'https://instaeat.azurewebsites.net/api/Restaurant';
+            const response = await axios.get(URL, {
+                headers: {
+                    Authorization: `${token}`
                 }
-            }); 
+            });
             setRestaurants(response.data.items);
             setLoading(false);
         } catch (error) {
@@ -60,7 +49,7 @@ const Product = ({ navigation }) => {
         },
         card: {
             width: cardWidth,
-            height: 250, 
+            height: 250,
             borderRadius: 10,
             borderWidth: 1,
             borderColor: '#000', // Màu đen
@@ -127,3 +116,4 @@ const Product = ({ navigation }) => {
 };
 
 export default Product;
+ 

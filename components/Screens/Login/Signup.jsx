@@ -51,7 +51,7 @@ const SignUp = ({ navigation }) => {
         textContainer2: {
             position: 'absolute',
             top: '33%',
-            left: '30%',
+            left: '36%',
             alignItems: 'center',
         },
         text2: {
@@ -73,7 +73,7 @@ const SignUp = ({ navigation }) => {
         },
         button: {
             position: 'absolute',
-            top: '66%',
+            top: '78%',
             width: '20',
             padding: 15,
             backgroundColor: 'orange',
@@ -101,7 +101,7 @@ const SignUp = ({ navigation }) => {
                         style={styles.input}
                         onChangeText={setName}
                         value={name}
-                        placeholder="Tên ..."
+                        placeholder="Tên"
                         placeholderTextColor="black"
                         keyboardType="default"
                     />
@@ -109,7 +109,7 @@ const SignUp = ({ navigation }) => {
                         style={styles.input}
                         onChangeText={setUsername}
                         value={username}
-                        placeholder="Tên đăng nhập ..."
+                        placeholder="Tên đăng nhập"
                         placeholderTextColor="black"
                         keyboardType="default"
                     />
@@ -117,7 +117,7 @@ const SignUp = ({ navigation }) => {
                         style={styles.input}
                         onChangeText={setPassword}
                         value={password}
-                        placeholder="Mật khẩu ..."
+                        placeholder="Mật khẩu"
                         placeholderTextColor="black"
                         secureTextEntry={true}
                     />
@@ -125,7 +125,7 @@ const SignUp = ({ navigation }) => {
                         style={styles.input}
                         onChangeText={setPhone}
                         value={phone}
-                        placeholder="Số điện thoại ..."
+                        placeholder="Số điện thoại"
                         placeholderTextColor="black"
                         keyboardType="phone-pad"
                     />
