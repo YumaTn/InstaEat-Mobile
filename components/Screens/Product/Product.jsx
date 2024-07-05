@@ -20,7 +20,6 @@ const Product = ({ navigation }) => {
     const fetchRestaurants = async () => {
         try {
             const token = await AsyncStorage.getItem('userToken');
-            console.log('Retrieved token:', token);
             if (!token) {
                 navigation.navigate('Login');
                 return;
@@ -36,7 +35,7 @@ const Product = ({ navigation }) => {
         } catch (error) {
             console.error('Error fetching restaurants:', error);
             setError(error.message); 
-            setLoading(true);
+            setLoading(false); // Set loading to false even on error
             Alert.alert('Error', 'Failed to fetch restaurants. Please try again.');
         } 
     };
@@ -62,6 +61,8 @@ const Product = ({ navigation }) => {
             shadowRadius: 2,
             elevation: 1,
             justifyContent: 'center',
+            marginRight:4,
+            marginLeft:2
         },
         image: {
             width: '100%',
@@ -87,7 +88,7 @@ const Product = ({ navigation }) => {
 
     const renderItem = ({ item }) => (
         <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Detail', { restaurantId: item.restaurantId })}>
-            <Image style={styles.image} source={{ uri: item.image }} />
+            <Image style={styles.image} source={require('../../../assets/images/background.jpg')} />
             <Text style={styles.title}>{item.restaurantName}</Text>
             <Text style={styles.description}>{item.address}</Text>
         </TouchableOpacity>
@@ -116,4 +117,3 @@ const Product = ({ navigation }) => {
 };
 
 export default Product;
- 

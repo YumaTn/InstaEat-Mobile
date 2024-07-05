@@ -36,9 +36,9 @@ const Login = ({ navigation }) => {
                 Alert.alert('Vui lòng điền tên đăng nhập và mật khẩu');
                 return;
             }
-
+    
             // Call API to check login
-            const URL = 'https://instaeat.azurewebsites.net/api/Account/Login';
+            const URL = 'https://instaeat.azurewebsites.net/api/Account/login';
             const response = await fetch(URL, {
                 method: 'POST',
                 headers: {
@@ -49,25 +49,48 @@ const Login = ({ navigation }) => {
                     password: password,
                 }),
             });
-
+    
             if (!response.ok) {
                 throw new Error('Invalid credentials');
             }
-
+    
             const data = await response.json();
-            const newToken = data.token; // Assuming your API returns a new token
-
-            // Store the token in AsyncStorage with 'Bearer' prefix
+            const newToken = data.token; // Lấy token từ phản hồi API
+    
+            // Lưu token vào AsyncStorage với tiền tố 'Bearer'
             await AsyncStorage.setItem('userToken', `Bearer ${newToken}`);
-            
-            // Store the username in AsyncStorage for later use
-            await AsyncStorage.setItem('username', username);
-
-            // Navigate to App component upon successful login
-            navigation.navigate('Navigation');
+    
+            // Lấy thông tin người dùng từ phản hồi API (vd: profile)
+            const profile = data.profile[0];
+            const { userId, roleId, name, phone } = profile; // Lấy thông tin cần thiết từ profile
+    
+            // Lưu trữ thông tin người dùng vào AsyncStorage
+            await AsyncStorage.multiSet([
+                ['userId', userId.toString()],
+                ['username', username],
+                ['password', password],
+                ['name', name],
+                ['roleId', roleId.toString()],
+                ['phone', phone],
+            ]);
+    
+            // Xóa dữ liệu trong input sau khi đăng nhập thành công
+            setUsername('');
+            setPassword('');
+    
+            // Kiểm tra roleId và điều hướng tương ứng
+            if (roleId === 1) {
+                Alert.alert('Thông báo', 'Bạn không có quyền truy cập');
+            } else if (roleId === 2) {
+                navigation.navigate('Navigation');
+            } else if (roleId === 3) {
+                navigation.navigate('RNavigation');
+            } else {
+                Alert.alert('Thông báo', 'Tài khoản của bạn không có quyền truy cập');
+            }
         } catch (error) {
             console.error('Error:', error.message);
-            Alert.alert('Error', 'Failed to login. Please try again.');
+            Alert.alert('Error', 'Đăng nhập thất bại. Vui lòng thử lại.');
         }
     };
 

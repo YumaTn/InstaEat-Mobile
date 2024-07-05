@@ -10,8 +10,11 @@ import Product from './Product/Product';
 import Photo from '../Screens/Product/Photo';
 import Signup from '../Screens/Login/Signup';
 import Home from './Home';
-import UpdateToRestaurant from '../Screens/Restaurant/UpdateToRestaurant'
-import Profile from './Profile';
+import UpdateToRestaurant from '../Screens/Restaurant/UpdateToRestaurant';
+import Wallet from './Wallet/Wallet';
+import RestaurantNavigation from '../navigation/NavigationRestaurant';
+import ShopPointScreen from '../Screens/PackagePay/ShopPointScreen';
+
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -56,8 +59,14 @@ export default function App() {
                 name="UpdateToRestaurant"
                 component={UpdateToRestaurant}/>
                 <Stack.Screen
-                name="Profile"
-                component={Profile}/>
+                name="Wallet"
+                component={Wallet}/>
+                <Stack.Screen
+                name="RNavigation"
+                component={RestaurantNavigation}/>
+                <Stack.Screen
+                name="ShopPoint"
+                component={ShopPointScreen}/>
         </Stack.Navigator>
     );
 }

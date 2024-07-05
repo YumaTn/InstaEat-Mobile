@@ -10,10 +10,6 @@
       container: {
         flex: 1,
       },
-      GreenSpace: {
-        padding:12,
-        backgroundColor: 'purple',
-      },
       titleContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -49,7 +45,6 @@
 
     return (
       <View style={styles.container}>
-        <View style={styles.GreenSpace}></View>
         <View style={styles.titleContainer}>
           <View style={styles.searchContainer}>
             <AntDesign name="search1" size={24} color="black" style={styles.icon} />
