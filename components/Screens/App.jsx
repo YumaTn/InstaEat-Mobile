@@ -14,7 +14,8 @@ import UpdateToRestaurant from '../Screens/Restaurant/UpdateToRestaurant';
 import Wallet from './Wallet/Wallet';
 import RestaurantNavigation from '../navigation/NavigationRestaurant';
 import ShopPointScreen from '../Screens/PackagePay/ShopPointScreen';
-
+import Review from '../Screens/Product/Review';
+import RestaurantAccept from '../Screens/Restaurant/RestaurantAccept';
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -67,6 +68,12 @@ export default function App() {
                 <Stack.Screen
                 name="ShopPoint"
                 component={ShopPointScreen}/>
+                <Stack.Screen
+                name="Review"
+                component={Review}/>
+                <Stack.Screen
+                name="RAccept"
+                component={RestaurantAccept}/>
         </Stack.Navigator>
     );
 }

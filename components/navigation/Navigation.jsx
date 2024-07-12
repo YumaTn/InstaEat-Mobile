@@ -36,7 +36,7 @@ const App = () => {
         options={{
           title: '',
           tabBarIcon: ({ focused }) => (
-            <Icon name="home" size={30} color={focused ? 'black' : 'white'} />
+            <Icon name="home" size={30} color={focused ? 'white' : 'black'} />
           ),
         }}
       />
@@ -46,7 +46,7 @@ const App = () => {
         options={{
           title: '',
           tabBarIcon: ({ focused }) => (
-            <Icon name="notifications" size={30} color={focused ? 'black' : 'white'} />
+            <Icon name="notifications" size={30} color={focused ? 'white' : 'black'} />
           ),
         }}
       />
@@ -56,12 +56,12 @@ const App = () => {
         options={{
           title: '',
           tabBarIcon: ({ focused }) => (
-            <Icon name="person" size={30} color={focused ? 'black' : 'white'} />
+            <Icon name="person" size={30} color={focused ? 'white' : 'black'} />
           ),
         }}
       />
     </Tab.Navigator>
   );
 };
-
+ 
 export default App;

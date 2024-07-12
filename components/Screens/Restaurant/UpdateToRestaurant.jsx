@@ -80,31 +80,31 @@ const UpdateToRestaurant = () => {
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <SimpleLineIcons name="arrow-left" size={24} color="white" />
       </TouchableOpacity>
-      <Text style={styles.title}>Update Restaurant Information</Text>
+      <Text style={styles.title}>Đăng ký nhà hàng</Text>
       <TextInput
         style={styles.input}
-        placeholder="Restaurant Name"
+        placeholder="Tên nhà hàng"
         value={restaurantName}
         onChangeText={setRestaurantName}
         placeholderTextColor="#CCCCCC"
       />
       <TextInput
         style={styles.input}
-        placeholder="Address"
+        placeholder="Địa chỉ"
         value={address}
         onChangeText={setAddress}
         placeholderTextColor="#CCCCCC"
       />
       <TextInput
         style={styles.input}
-        placeholder="Opening Time"
+        placeholder="Thời gian mở cửa"
         value={openTime}
         onChangeText={setOpenTime}
         placeholderTextColor="#CCCCCC"
       />
       <TextInput
         style={styles.input}
-        placeholder="Closing Time"
+        placeholder="Thời gian đóng cửa"
         value={closeTime}
         onChangeText={setCloseTime}
         placeholderTextColor="#CCCCCC"
@@ -154,6 +154,12 @@ const styles = StyleSheet.create({
     left: 20,
     padding: 10,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
+},
 });
 
 export default UpdateToRestaurant;

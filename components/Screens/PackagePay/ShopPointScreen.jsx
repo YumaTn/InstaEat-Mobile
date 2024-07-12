@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { Entypo } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
-const ShopPointScreen = ({navigation}) => {
+
+const ShopPointScreen = ({ navigation }) => {
   const [token, setToken] = useState(null);
   const [packages, setPackages] = useState([]);
 
   useEffect(() => {
-    // Function to retrieve token from AsyncStorage
     const getToken = async () => {
       try {
         const userToken = await AsyncStorage.getItem('userToken');
@@ -20,38 +19,60 @@ const ShopPointScreen = ({navigation}) => {
         console.error('Error retrieving token from AsyncStorage:', error);
       }
     };
-  
-    getToken(); // Call the function to get token
-  
-    // Function to fetch package data
+
+    getToken();
+
     const fetchPackages = async () => {
       try {
-        const response = await axios.get('https://instaeat.azurewebsites.net/api/Package', {
-          headers: {
-            Authorization: `${token}`, // Ensure Bearer is prepended to the token
-          },
-        });
-        setPackages(response.data.items); // Assuming response contains an array of packages
+        if (token) {
+          const response = await axios.get('https://instaeat.azurewebsites.net/api/Package', {
+            headers: {
+              Authorization: `${token}`, // Ensure 'Bearer' prefix if required
+            },
+          });
+          setPackages(response.data.items);
+        }
       } catch (error) {
         console.error('Error fetching packages:', error);
       }
     };
-  
+
     if (token) {
-      fetchPackages(); // Call the function to fetch packages if token is available
+      fetchPackages();
     }
-  }, [token]); // Dependency array to run effect only when token changes
-  
+  }, [token]);
+
+  const handleAddPoints = async (packageId) => {
+    try {
+      const restaurantId = await AsyncStorage.getItem('restaurantId');
+      console.log('Package ID:', packageId);
+      console.log('Restaurant ID:', restaurantId);
+
+      const response = await axios.post(`https://instaeat.azurewebsites.net/api/Order/add-points?restaurantId=${restaurantId}&packageId=${packageId}`, {}, {
+        headers: {
+          Authorization: `${token}`, // Ensure 'Bearer' prefix if required
+        },
+      });
+
+      if (response.status === 200) {
+        Alert.alert('Success', 'Points added successfully');
+      } else {
+        Alert.alert('Error', 'Failed to add points');
+      }
+    } catch (error) {
+      console.error('Error adding points:', error);
+      Alert.alert('Error', 'Failed to add points');
+    }
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
-        <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
-        <MaterialIcons name="keyboard-arrow-left" size={24} color="white" />
-          <Text style={styles.headerText}>Túi điểm của cửa hàng</Text>
+          <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
+            <MaterialIcons name="keyboard-arrow-left" size={24} color="white" />
+            <Text style={styles.headerText}>Gói điểm của cửa hàng</Text>
           </TouchableOpacity>
-          <Text style={styles.pointsValue}>Điểm hiện có: 0</Text>
         </View>
       </View>
       <FlatList
@@ -62,10 +83,10 @@ const ShopPointScreen = ({navigation}) => {
             <View style={styles.packageInfo}>
               <Text style={styles.packagePoints}>{item.packageName}</Text>
               <Text style={styles.packagePrice}>Giá: {item.price} VNĐ</Text>
-              <Text style={styles.packagePointPrice}>Điểm:<Text>{item.point} Point</Text></Text>
+              <Text style={styles.packagePointPrice}>Điểm: {item.point} Point</Text>
             </View>
-            <TouchableOpacity>
-            <Entypo name="shopping-cart" size={24} color="orange" />
+            <TouchableOpacity onPress={() => handleAddPoints(item.packageId)}>
+              <Entypo name="shopping-cart" size={24} color="orange" />
             </TouchableOpacity>
           </View>
         )}
@@ -86,7 +107,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     paddingTop: 30,
     backgroundColor: 'purple',
-    paddingBottom:10,
+    paddingBottom: 10,
   },
   headerContent: {
     alignItems: 'flex-start',
@@ -98,7 +119,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     padding: 20,
-    paddingLeft:0,
+    paddingLeft: 0,
     fontSize: 20,
     fontWeight: 'bold',
     color: 'white',
@@ -112,7 +133,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 5,
     padding: 10,
-    marginTop:10,
+    marginTop: 10,
   },
   packageInfo: {
     flex: 1,
@@ -129,8 +150,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  back:{
-    flexDirection:'row',
+  back: {
+    flexDirection: 'row',
     alignItems: 'center',
   }
 });

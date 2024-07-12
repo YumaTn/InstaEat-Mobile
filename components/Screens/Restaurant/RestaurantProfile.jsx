@@ -1,35 +1,51 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
+import axios from 'axios';
 
-const Profile = ({ navigation }) => {
+const RestaurantProfile = ({ navigation }) => {
     const [userData, setUserData] = useState(null);
+    const [restaurantData, setRestaurantData] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const getUserDataFromStorage = async () => {
-            try {
-                const username = await AsyncStorage.getItem('username');
-                const password = await AsyncStorage.getItem('password');
-                const name = await AsyncStorage.getItem('name');
-                const phone = await AsyncStorage.getItem('phone');
+        const fetchUserData = async () => {
+            const user = {
+                username: await AsyncStorage.getItem('username'),
+                password: await AsyncStorage.getItem('password'),
+                name: await AsyncStorage.getItem('name'),
+                phone: await AsyncStorage.getItem('phone'),
+                userId: await AsyncStorage.getItem('userId'),
+                roleId: await AsyncStorage.getItem('roleId')
+            };
+            setUserData(user);
+        };
 
-                setUserData({
-                    username: username || 'N/A',
-                    password: '*'.repeat(password?.length || 0) || 'N/A',
-                    name: name || 'N/A',
-                    phone: phone || 'N/A',
+        const fetchRestaurantData = async () => {
+            try {
+                const token = await AsyncStorage.getItem('userToken');
+                const restaurantId = await AsyncStorage.getItem('restaurantId');
+                if (!token) {
+                    throw new Error('User token not found');
+                }
+                const response = await axios.get(`https://instaeat.azurewebsites.net/api/Restaurant/${restaurantId}`, {
+                    headers: {
+                        Authorization: `${token}`,
+                    },
                 });
+
+                setRestaurantData(response.data);
             } catch (error) {
-                console.error('Error getting user data from storage:', error);
-                Alert.alert('Error', 'Failed to get user data from storage. Please try again.');
+                console.error('Error fetching restaurant details:', error);
+                Alert.alert('Error', 'Failed to fetch restaurant details. Please try again.');
             } finally {
                 setLoading(false);
             }
         };
 
-        getUserDataFromStorage();
+        fetchUserData();
+        fetchRestaurantData();
     }, []);
 
     const handleLogout = async () => {
@@ -59,16 +75,18 @@ const Profile = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
-                <Text style={styles.titleText}>{userData ? userData.name : 'N/A'}</Text>
-                <TouchableOpacity style={styles.restaurant} onPress={() => navigation.navigate('UpdateToRestaurant')}>
-                    <Text style={styles.restaurantText}>Đăng ký nhà hàng</Text>
-                </TouchableOpacity>
+                <Text style={styles.titleText}>{restaurantData ? restaurantData.restaurantName : 'N/A'}</Text>
             </View>
-            <Text style={styles.sectionHeader}>Thông tin người dùng:</Text>
-            <Text style={styles.userInfo}>Tên đăng nhập: {userData ? userData.username : 'N/A'}</Text>
-            <Text style={styles.userInfo}>Mật khẩu: {userData ? userData.password : 'N/A'}</Text>
-            <Text style={styles.userInfo}>Tên: {userData ? userData.name : 'N/A'}</Text>
-            <Text style={styles.userInfo}>Số điện thoại: {userData ? userData.phone : 'N/A'}</Text>
+            {restaurantData && (
+                <>
+                    <Text style={styles.sectionHeader}>Thông tin nhà hàng:</Text>
+                    <Text style={styles.userInfo}>Tên nhà hàng: {restaurantData.restaurantName}</Text>
+                    <Text style={styles.userInfo}>Địa chỉ: {restaurantData.address}</Text>
+                    <Text style={styles.userInfo}>Giờ mở cửa: {restaurantData.openTime}</Text>
+                    <Text style={styles.userInfo}>Giờ đóng cửa: {restaurantData.closeTime}</Text>
+                </>
+            )}
+
             <TouchableOpacity onPress={() => navigation.navigate('Wallet')}>
                 <View style={styles.wallet}>
                     <Text style={styles.walletTitle}>Wallet</Text>
@@ -86,7 +104,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white',
-        paddingTop: 0, // Adjust to ensure titleContainer reaches the top
     },
     loadingContainer: {
         flex: 1,
@@ -123,8 +140,9 @@ const styles = StyleSheet.create({
     titleContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        paddingTop: 50,
         padding: 16,
-        paddingTop:58,
+        paddingBottom:22,
         backgroundColor: 'purple',
         justifyContent: 'space-between',
         width: '100%',
@@ -151,4 +169,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default Profile;
+export default RestaurantProfile;

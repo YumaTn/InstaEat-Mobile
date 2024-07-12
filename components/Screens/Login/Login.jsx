@@ -51,7 +51,7 @@ const Login = ({ navigation }) => {
             });
     
             if (!response.ok) {
-                throw new Error('Invalid credentials');
+                throw new Error('không có tài khoản');
             }
     
             const data = await response.json();
@@ -84,6 +84,7 @@ const Login = ({ navigation }) => {
             } else if (roleId === 2) {
                 navigation.navigate('Navigation');
             } else if (roleId === 3) {
+                await fetchRestaurantData(userId, newToken, navigation);
                 navigation.navigate('RNavigation');
             } else {
                 Alert.alert('Thông báo', 'Tài khoản của bạn không có quyền truy cập');
@@ -91,6 +92,39 @@ const Login = ({ navigation }) => {
         } catch (error) {
             console.error('Error:', error.message);
             Alert.alert('Error', 'Đăng nhập thất bại. Vui lòng thử lại.');
+        }
+    };
+
+    const fetchRestaurantData = async (userId, token, navigation) => {
+        try {
+            const URL = 'https://instaeat.azurewebsites.net/api/Restaurant';
+            const response = await fetch(URL, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch restaurant data');
+            }
+
+            const data = await response.json();
+
+            // Tìm userId trong danh sách trả về từ API
+            const restaurant = data.items.find(item => item.userId === userId);
+
+            if (restaurant) {
+                const { restaurantId } = restaurant;
+                // Lưu restaurantId vào AsyncStorage
+                await AsyncStorage.setItem('restaurantId', restaurantId.toString());
+            } else {
+                Alert.alert('Error', 'Không tìm thấy nhà hàng của bạn');
+            }
+        } catch (error) {
+            console.error('Error fetching restaurant data:', error.message);
+            Alert.alert('Error', 'Không thể tải dữ liệu nhà hàng. Vui lòng thử lại.');
         }
     };
 

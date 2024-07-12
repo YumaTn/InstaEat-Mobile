@@ -9,13 +9,18 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
-      
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+      "CAMERA_ROLL",
+      "AUDIO_RECORDING",
+      "LOCATION",
+      "MEDIA_LIBRARY"
+    ]
     },
     "web": {
       "bundler": "metro",

@@ -1,42 +1,144 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons'; 
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, FlatList, Alert, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const Notification = () => {
-  const [notifications, setNotifications] = useState([
-    { id: 10, message: 'Tường đã để lại 1 bình luận ảnh' },
-    { id: 11, message: 'Nam đã để lại 1 bình luận ảnh' },
-    { id: 12, message: 'Bảo đã để lại 1 bình luận ảnh' },
-    { id: 13, message: 'Huy đã để lại 1 bình luận ảnh' },
-    { id: 14, message: 'Tường đã để lại 1 bình luận ảnh' },
-    { id: 15, message: 'Nam đã để lại 1 bình luận ảnh' },
-    { id: 16, message: 'Bảo đã để lại 1 bình luận ảnh' },
-    { id: 17, message: 'Huy đã để lại 1 bình luận ảnh' },
-    { id: 18, message: 'Tường đã để lại 1 bình luận ảnh' },
-  ]);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [restaurantDetails, setRestaurantDetails] = useState({});
+  const [userDetails, setUserDetails] = useState({});
 
-  const [deletedNotifications, setDeletedNotifications] = useState([]);
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        const userId = await AsyncStorage.getItem('userId');
+        
+        if (!token || !userId) {
+          throw new Error('User token or User ID not found');
+        }
 
-  const handleDeleteNotification = (notificationId) => {
-    Alert.alert(
-      'Xác nhận xóa',
-      'Bạn có chắc chắn muốn xóa thông báo này?',
-      [
-        {
-          text: 'Hủy',
-          style: 'cancel',
-        },
-        {
-          text: 'Xóa',
-          onPress: () => {
-            setNotifications(prevNotifications => prevNotifications.filter(notification => notification.id !== notificationId));
-            setDeletedNotifications(prevDeletedNotifications => [...prevDeletedNotifications, notificationId]); 
+        const response = await axios.get('https://instaeat.azurewebsites.net/api/Transaction', {
+          params: {
+            minDate: '1753-01-01',
+            maxDate: '9999-12-31',
           },
-        },
-      ],
-      { cancelable: false }
-    );  
-  };
+          headers: {
+            Authorization: `${token}`,
+          },
+        });
+
+        if (response.data && response.data.items) {
+          const filteredTransactions = response.data.items.filter(item => item.userId === parseInt(userId));
+          setTransactions(filteredTransactions);
+          setLoading(false);
+        } else {
+          throw new Error('Empty response or missing items array');
+        }
+        
+      } catch (error) {
+        console.error('Error fetching transactions:', error);
+        setError('Failed to fetch transactions. Please try again.');
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        const userId = await AsyncStorage.getItem('userId');
+        
+        if (!token || !userId) {
+          throw new Error('User token or User ID not found');
+        }
+
+        const response = await axios.get(`https://instaeat.azurewebsites.net/api/Account/${userId}`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        });
+
+        if (response.data) {
+          setUserDetails(response.data);
+        } else {
+          throw new Error(`Failed to fetch user details for userId: ${userId}`);
+        }
+        
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+        setError('Failed to fetch user details. Please try again.');
+      }
+    };
+
+    fetchUserDetails();
+  }, []);
+
+  useEffect(() => {
+    const fetchRestaurantDetails = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        const userId = await AsyncStorage.getItem('userId');
+        
+        if (!token || !userId) {
+          throw new Error('User token or User ID not found');
+        }
+
+        transactions.forEach(async (transaction) => {
+          const response = await axios.get(`https://instaeat.azurewebsites.net/api/Restaurant/${transaction.restaurantId}`, {
+            headers: {
+              Authorization: `${token}`,
+            },
+          });
+
+          if (response.data) {
+            const restaurantInfo = response.data;
+            setRestaurantDetails(prevState => ({
+              ...prevState,
+              [transaction.restaurantId]: restaurantInfo.restaurantName,
+            }));
+          } else {
+            throw new Error(`Failed to fetch restaurant details for restaurantId: ${transaction.restaurantId}`);
+          }
+        });
+        
+      } catch (error) {
+        console.error('Error fetching restaurant details:', error);
+        setError('Failed to fetch restaurant details. Please try again.');
+      }
+    };
+
+    fetchRestaurantDetails();
+  }, [transactions]);
+
+  const renderItem = ({ item }) => (
+    <View style={styles.notificationItem}>
+      <Text style={styles.notificationText}>Bạn đã nhận được {item.amount} point của nhà hàng {restaurantDetails[item.restaurantId]}</Text>
+      <Text style={[styles.notificationText, styles.amountText]}>+ {item.amount} point</Text>
+      <Text style={styles.notificationText}>{new Date(item.created).toLocaleString()}</Text>
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="purple" />
+            </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text>{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -45,16 +147,10 @@ const Notification = () => {
       </View>
 
       <FlatList
-        data={notifications}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.notificationItem}>
-            <Text style={styles.notificationText}>{item.message}</Text>
-            <TouchableOpacity  onPress={() => handleDeleteNotification(item.id)}>
-              <Icon name="trash-outline" size={20} color="gray" />
-            </TouchableOpacity>
-          </View>
-        )}
+        data={transactions}
+        keyExtractor={(item) => item.transactionId.toString()}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContainer}
       />
     </View>
   );
@@ -81,18 +177,32 @@ const styles = StyleSheet.create({
   },
   notificationItem: {
     backgroundColor: 'white',
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
-    paddingVertical: 10,  
+    paddingVertical: 10,
+    paddingHorizontal: 15,
     marginBottom: 5,
   },
   notificationText: {
-    marginLeft: 10,
     fontSize: 16,
   },
+  amountText: {
+    textAlign: 'right', // Align text to the right
+    width: '100%', // Ensure full width to align right
+    color:'green'
+  },
+  listContainer: {
+    padding: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
+},
 });
 
 export default Notification;

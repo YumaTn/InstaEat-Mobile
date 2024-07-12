@@ -6,7 +6,8 @@ import Home from '../Screens/Home.jsx';
 import Notification from '../Screens/Notification.jsx';
 import Profile from '../Screens/Profile.jsx';
 import RestaurantHome from '../Screens/Restaurant/RestaurantHome.jsx';
-
+import RestaurantProfile from '../Screens/Restaurant/RestaurantProfile.jsx';
+import RestaurantNotification from '../Screens/Restaurant/RestaurantNotification.jsx';
 const Tab = createBottomTabNavigator();
 
 const RestaurantNavigation = (route ) => {
@@ -42,8 +43,8 @@ const RestaurantNavigation = (route ) => {
         }}
       />
       <Tab.Screen
-        name={SCREENS.NOTIFICATION}
-        component={Notification}
+        name={SCREENS.RESTAURANTNOTIFICATION}
+        component={RestaurantNotification}
         options={{
           title: '',
           tabBarIcon: ({ focused }) => (
@@ -52,8 +53,8 @@ const RestaurantNavigation = (route ) => {
         }}
       />
       <Tab.Screen
-        name={SCREENS.PROFILE}
-        component={Profile}
+        name={SCREENS.RESTAURANTPROFILE}
+        component={RestaurantProfile}
         options={{
           title: '',
           tabBarIcon: ({ focused }) => (

@@ -11,24 +11,11 @@ const Wallet = ({ navigation }) => {
     const fetchTotalPoint = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
-        if (!token) {
-          throw new Error('User token not found');
+        const userId = await AsyncStorage.getItem('userId');
+        
+        if (!token || !userId) {
+          throw new Error('User token or userId not found');
         }
-
-        // Fetch user data to get the UserId
-        const userUrl = 'https://instaeat.azurewebsites.net/api/Account';
-        const userResponse = await fetch(userUrl, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        });
-
-        if (!userResponse.ok) {
-          throw new Error('Failed to fetch user data');
-        }
-
-        const userData = await userResponse.json();
-        const userId = userData.items[0].userId;
 
         // Fetch total points using UserId
         const walletUrl = `https://instaeat.azurewebsites.net/api/Wallet/${userId}`;
@@ -44,6 +31,10 @@ const Wallet = ({ navigation }) => {
 
         const walletData = await walletResponse.json();
         setTotalPoint(walletData.totalPoint);
+
+        // Log totalPoint and walletId
+        console.log('Total Point:', walletData.totalPoint);
+        console.log('Wallet ID:', walletData.walletId); // Assuming walletData contains walletId
       } catch (error) {
         console.error('Error fetching data:', error);
         Alert.alert('Error', 'Failed to fetch data. Please try again.');
@@ -58,7 +49,7 @@ const Wallet = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="purple" />
+        <ActivityIndicator size="large" color="white" />
       </View>
     );
   }
