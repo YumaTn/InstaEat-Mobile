@@ -1,6 +1,5 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
-import Login from '../../components/Screens/Login/Login';
+import {StyleSheet, View } from 'react-native';
 import App from '../../components/Screens/App';
 export default function HomeScreen() {
   const styles = StyleSheet.create({
@@ -10,10 +9,9 @@ export default function HomeScreen() {
     },
   })
   return (
-    <><View style={styles.container}>
+    <View style={styles.container}>
           <App/>
       </View>
-    </>
   );
 }
 

@@ -78,7 +78,7 @@ const UpdateToRestaurant = () => {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <SimpleLineIcons name="arrow-left" size={24} color="white" />
+        <SimpleLineIcons name="arrow-left" size={20} color="white" />
       </TouchableOpacity>
       <Text style={styles.title}>Đăng ký nhà hàng</Text>
       <TextInput
@@ -89,11 +89,13 @@ const UpdateToRestaurant = () => {
         placeholderTextColor="#CCCCCC"
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.multilineInput]} // Add styles.multilineInput for multiline input
         placeholder="Địa chỉ"
         value={address}
         onChangeText={setAddress}
         placeholderTextColor="#CCCCCC"
+        multiline={true} // Enable multiline input
+        numberOfLines={4} // Optional: Set number of lines visible
       />
       <TextInput
         style={styles.input}
@@ -121,7 +123,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'purple',
+    backgroundColor: '#ef4d2d',
     padding: 20,
   },
   input: {
@@ -132,6 +134,10 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: 'white',
     marginTop: 10,
+  },
+  multilineInput: {
+    height: 100, // Set height for multiline input
+    textAlignVertical: 'top', // Align text to the top
   },
   button: {
     borderWidth: 1,
@@ -150,16 +156,10 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    top: 20,
-    left: 20,
+    top: 30,
+    left: 10,
     padding: 10,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
-},
 });
 
 export default UpdateToRestaurant;

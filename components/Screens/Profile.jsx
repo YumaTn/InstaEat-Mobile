@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
-
 const Profile = ({ navigation }) => {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -64,7 +63,12 @@ const Profile = ({ navigation }) => {
                     <Text style={styles.restaurantText}>Đăng ký nhà hàng</Text>
                 </TouchableOpacity>
             </View>
+            <View style={styles.sectionEdit}>
             <Text style={styles.sectionHeader}>Thông tin người dùng:</Text>
+            <TouchableOpacity style={styles.edit} onPress={() => navigation.navigate('EditUser')}>
+            <MaterialIcons name="edit" size={24} color="black" />
+            </TouchableOpacity>
+            </View>
             <Text style={styles.userInfo}>Tên đăng nhập: {userData ? userData.username : 'N/A'}</Text>
             <Text style={styles.userInfo}>Mật khẩu: {userData ? userData.password : 'N/A'}</Text>
             <Text style={styles.userInfo}>Tên: {userData ? userData.name : 'N/A'}</Text>
@@ -106,7 +110,7 @@ const styles = StyleSheet.create({
     },
     logoutButton: {
         marginTop: 30,
-        backgroundColor: 'purple',
+        backgroundColor: '#ef4d2d',
         padding: 10,
         marginLeft: 10,
         marginRight: 10,
@@ -125,7 +129,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 16,
         paddingTop:58,
-        backgroundColor: 'purple',
+        backgroundColor: '#ef4d2d',
         justifyContent: 'space-between',
         width: '100%',
     },
@@ -148,7 +152,16 @@ const styles = StyleSheet.create({
     },
     walletTitle: {
         fontSize: 15,
-    }
+    },
+    sectionEdit:{
+        flexDirection: 'row',
+        alignItems: 'center',
+         justifyContent:'space-between'
+    },
+    edit:{
+        top:5,
+        marginRight:7,
+    },
 });
 
 export default Profile;

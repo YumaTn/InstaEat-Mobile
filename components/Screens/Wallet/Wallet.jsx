@@ -49,7 +49,7 @@ const Wallet = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="white" />
+        <ActivityIndicator size="large" color="#ef4d2d" />
       </View>
     );
   }
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'purple',
+    backgroundColor: '#ef4d2d',
     paddingTop: 60,
     paddingBottom: 20,
     paddingHorizontal: 20,
@@ -106,6 +106,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor:'white'
   },
 });
 

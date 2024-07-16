@@ -1,21 +1,21 @@
 import { createStackNavigator } from '@react-navigation/stack';
-import PlashScreen_1 from './PlashScreen/PlashScreen_1';
 import { StyleSheet } from 'react-native';
-import PlashScreen_2 from './PlashScreen/PlashScreen_2';
-import PlashScreen_3 from './PlashScreen/PlashScreen_3';
+import PlashScreen from './PlashScreen/PlashScreen';
 import Navigation from '../navigation/Navigation';
 import Login from './Login/Login';
 import ProductDetails from '../Screens/Product/ProductDetails';
 import Product from './Product/Product';
-import Photo from '../Screens/Product/Photo';
 import Signup from '../Screens/Login/Signup';
 import Home from './Home';
 import UpdateToRestaurant from '../Screens/Restaurant/UpdateToRestaurant';
 import Wallet from './Wallet/Wallet';
-import RestaurantNavigation from '../navigation/NavigationRestaurant';
 import ShopPointScreen from '../Screens/PackagePay/ShopPointScreen';
 import Review from '../Screens/Product/Review';
 import RestaurantAccept from '../Screens/Restaurant/RestaurantAccept';
+import NavigationRestaurant from '../navigation/NavigationRestaurant';
+import EditUser from '../Screens/EditUser';
+import Password from '../Screens/Password';
+import EditRestaurant from '../Screens/Restaurant/EditRestaurant';
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -27,14 +27,8 @@ export default function App() {
             }}
         >
             <Stack.Screen
-                name="Plash_1"
-                component={PlashScreen_1} />
-            <Stack.Screen
-                name="Plash_2"
-                component={PlashScreen_2} />
-            <Stack.Screen
                 name="Plash_3"
-                component={PlashScreen_3} />
+                component={PlashScreen} />
             <Stack.Screen
                 name="Navigation"
                 component={Navigation} />
@@ -47,9 +41,6 @@ export default function App() {
             <Stack.Screen
                 name="Product"
                 component={Product}/>
-            <Stack.Screen
-                name="photo"
-                component={Photo}/>
                 <Stack.Screen
                 name="SignUp"
                 component={Signup}/>
@@ -64,7 +55,7 @@ export default function App() {
                 component={Wallet}/>
                 <Stack.Screen
                 name="RNavigation"
-                component={RestaurantNavigation}/>
+                component={NavigationRestaurant}/>
                 <Stack.Screen
                 name="ShopPoint"
                 component={ShopPointScreen}/>
@@ -74,6 +65,15 @@ export default function App() {
                 <Stack.Screen
                 name="RAccept"
                 component={RestaurantAccept}/>
+                <Stack.Screen
+                name="EditUser"
+                component={EditUser}/>
+                <Stack.Screen
+                name="Password"
+                component={Password}/>
+                <Stack.Screen
+                name="EditRestaurant"
+                component={EditRestaurant}/>
         </Stack.Navigator>
     );
 }

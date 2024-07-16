@@ -24,6 +24,7 @@ const Notification = () => {
           params: {
             minDate: '1753-01-01',
             maxDate: '9999-12-31',
+            pageSize:100,
           },
           headers: {
             Authorization: `${token}`,
@@ -127,7 +128,7 @@ const Notification = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="purple" />
+                <ActivityIndicator size="large" color="#ef4d2d" />
             </View>
     );
   }
@@ -167,7 +168,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 5,
     paddingTop: 30,
-    backgroundColor: 'purple',
+    backgroundColor: '#ef4d2d',
   },
   headerText: {
     padding: 20,
@@ -190,8 +191,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   amountText: {
-    textAlign: 'right', // Align text to the right
-    width: '100%', // Ensure full width to align right
+    textAlign: 'right',
+    width: '100%',
     color:'green'
   },
   listContainer: {

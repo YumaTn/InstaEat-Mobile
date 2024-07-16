@@ -14,7 +14,7 @@ const SignUp = ({ navigation }) => {
               username: username,
               password: password,
               name: name,
-              phone: phone.toString() // Ensure phone number is sent as a string
+              phone: phone.toString()
           });
   
           console.log('Response from API:', response.data);
@@ -29,7 +29,7 @@ const SignUp = ({ navigation }) => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: 'purple',
+            backgroundColor: '#ef4d2d',
             justifyContent: 'center',
             alignItems: 'center',
         },
@@ -73,7 +73,7 @@ const SignUp = ({ navigation }) => {
         },
         button: {
             position: 'absolute',
-            top: '78%',
+            top: '68%',
             width: '20',
             padding: 15,
             backgroundColor: 'orange',
@@ -82,6 +82,14 @@ const SignUp = ({ navigation }) => {
         },
         loginText: {
             color: 'white',
+        },
+        tk:{
+            position: 'absolute',
+            top:'76%',
+            alignItems:'center',
+            borderTopWidth:1,
+            borderColor:'#CCCCCC',
+            paddingTop:20,
         }
     });
 
@@ -132,6 +140,9 @@ const SignUp = ({ navigation }) => {
                 </View>
                 <TouchableOpacity style={styles.button} onPress={handleSignUp}>
                     <Text style={styles.loginText}>Đăng Ký</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.tk} onPress={() => navigation.goBack()}>
+                    <Text style={styles.loginText}>Bạn đã có tài khoản?</Text>
                 </TouchableOpacity>
                 <Image source={require('../../../assets/images/Line 4.png')} />
             </View>

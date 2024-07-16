@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, ActivityIndicator, Modal, TouchableWithoutFeedback } from 'react-native';
 import axios from 'axios';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -12,6 +12,9 @@ const ProductDetails = ({ navigation, route }) => {
   const [imageCount, setImageCount] = useState(0);
   const [commentCount, setCommentCount] = useState(0);
   const [reviews, setReviews] = useState([]);
+  const [customerNames, setCustomerNames] = useState({});
+  const [modalVisible, setModalVisible] = useState(false); // State để điều khiển hiển thị Modal
+  const [selectedImage, setSelectedImage] = useState(null); // State để lưu đường dẫn ảnh được chọn
 
   useEffect(() => {
     const fetchRestaurantDetails = async () => {
@@ -52,6 +55,22 @@ const ProductDetails = ({ navigation, route }) => {
           });
           setImageCount(images);
           setCommentCount(comments);
+
+          // Fetch customer names for each review
+          const namesPromises = filteredReviews.map(async (review) => {
+            const accountResponse = await axios.get(`https://instaeat.azurewebsites.net/api/Account/${review.customerId}`, {
+              headers: {
+                Authorization: `${token}`,
+              },
+            });
+            return { customerId: review.customerId, name: accountResponse.data.name };
+          });
+          const names = await Promise.all(namesPromises);
+          const namesMap = {};
+          names.forEach((nameData) => {
+            namesMap[nameData.customerId] = nameData.name;
+          });
+          setCustomerNames(namesMap);
         } else {
           throw new Error('Failed to fetch review data');
         }
@@ -66,10 +85,22 @@ const ProductDetails = ({ navigation, route }) => {
     fetchRestaurantDetails();
   }, [restaurantId]);
 
+  // Function to open the modal with selected image
+  const handleImagePress = (imageUri) => {
+    setSelectedImage(imageUri);
+    setModalVisible(true);
+  };
+
+  // Function to close the modal
+  const closeModal = () => {
+    setSelectedImage(null);
+    setModalVisible(false);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="purple" />
+        <ActivityIndicator size="large" color="#ef4d2d" />
       </View>
     );
   }
@@ -122,16 +153,31 @@ const ProductDetails = ({ navigation, route }) => {
             </Text>
           </View>
           <View style={styles.commentContainer}>
-            <Text style={styles.commentUser}>Bình luận:</Text>
+            <Text style={styles.commentUser}>{commentCount} bình luận</Text>
             {reviews.map((review, index) => (
-              <View key={index} style={styles.commentItem}>
-                <Text style={styles.commentText}>{review.content}</Text>
-                {review.image && <Image source={{ uri: review.image }} style={styles.commentImage} />}
-              </View>
+              <TouchableWithoutFeedback key={index} onPress={() => handleImagePress(review.image)}>
+                <View style={styles.commentItem}>
+                  <Text style={styles.customerId}>{customerNames[review.customerId]}:</Text>
+                  <Text style={styles.commentText}>{review.content}</Text>
+                  {review.image && <Image source={{ uri: review.image }} style={styles.commentImage} />}
+                </View>
+              </TouchableWithoutFeedback>
             ))}
           </View>
         </View>
       </ScrollView>
+
+      {/* Modal to display selected image */}
+      <Modal visible={modalVisible} transparent={true} animationType="fade">
+        <View style={styles.modalContainer}>
+          <TouchableWithoutFeedback onPress={closeModal}>
+            <View style={styles.modalBackground} />
+          </TouchableWithoutFeedback>
+          <View style={styles.modalContent}>
+            <Image source={{ uri: selectedImage }} style={styles.modalImage} />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -145,7 +191,7 @@ const styles = StyleSheet.create({
   container: {
     paddingBottom: 20,
     paddingTop: 50,
-    backgroundColor: 'purple',
+    backgroundColor: '#ef4d2d',
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -162,8 +208,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   commentUser: {
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 5,
+    padding: 10,
+    paddingLeft: 1,
   },
   text1: {
     color: 'white',
@@ -180,13 +228,11 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   info: {
-    borderWidth: 1,
-    borderColor: 'gray',
-    elevation: 1,
+    borderBottomWidth: 1,
+    borderColor: '#CCCCCC',
     padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: 'white',
   },
   DetailInfo: {
     alignItems: 'center',
@@ -203,7 +249,7 @@ const styles = StyleSheet.create({
   tilteRestaurant: {
     padding: 10,
     borderWidth: 1,
-    borderColor: 'gray',
+    borderColor: '#CCCCCC',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -228,16 +274,48 @@ const styles = StyleSheet.create({
     borderTopColor: '#CCCCCC',
   },
   commentItem: {
-    marginBottom: 20,
+    marginVertical: 10,
+    borderTopWidth: 1,
+    borderColor: '#CCCCCC',
   },
   commentText: {
-    marginBottom: 10,
+    fontSize: 16,
+    marginBottom: 2,
+    marginLeft: 20,
   },
   commentImage: {
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+    marginLeft: 20,
+  },
+  customerId: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black',
+    marginBottom: 5,
+    marginLeft: 2,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalBackground: {
+    flex: 1,
     width: '100%',
-    height: 200,
+  },
+  modalContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom:300,
+  },  
+  modalImage: {
+    width: 400,
+    height: 400,
     resizeMode: 'cover',
-    marginTop: 10,
   },
   loadingContainer: {
     flex: 1,

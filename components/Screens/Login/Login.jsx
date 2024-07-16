@@ -90,7 +90,6 @@ const Login = ({ navigation }) => {
                 Alert.alert('Thông báo', 'Tài khoản của bạn không có quyền truy cập');
             }
         } catch (error) {
-            console.error('Error:', error.message);
             Alert.alert('Error', 'Đăng nhập thất bại. Vui lòng thử lại.');
         }
     };
@@ -123,7 +122,6 @@ const Login = ({ navigation }) => {
                 Alert.alert('Error', 'Không tìm thấy nhà hàng của bạn');
             }
         } catch (error) {
-            console.error('Error fetching restaurant data:', error.message);
             Alert.alert('Error', 'Không thể tải dữ liệu nhà hàng. Vui lòng thử lại.');
         }
     };
@@ -131,7 +129,7 @@ const Login = ({ navigation }) => {
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: 'purple',
+            backgroundColor: '#ef4d2d',
             justifyContent: 'center',
             alignItems: 'center',
         },

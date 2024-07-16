@@ -36,7 +36,7 @@ const Product = ({ navigation }) => {
             });
             const fetchedRestaurants = response.data.items;
             setRestaurants(fetchedRestaurants);
-            setOriginalRestaurants(fetchedRestaurants); // Lưu danh sách gốc
+            setOriginalRestaurants(fetchedRestaurants);
             setDisplayRestaurants(fetchedRestaurants); // Lưu cả danh sách gốc và hiển thị
             setLoading(false);
         } catch (error) {
@@ -54,76 +54,6 @@ const Product = ({ navigation }) => {
         );
         setDisplayRestaurants(filteredRestaurants.length > 0 ? filteredRestaurants : displayRestaurants);
     };
-
-    const styles = StyleSheet.create({
-        container: {
-            flex: 1,
-            backgroundColor: '#f8f8f8',
-        },
-        card: {
-            width: cardWidth,
-            height: 320, // Độ cao của card
-            borderRadius: 10,
-            borderColor: '#000', 
-            margin: 5,
-            backgroundColor: '#fff',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.8,
-            shadowRadius: 2,
-            elevation: 1,
-            justifyContent: 'flex-start', // Căn đầu dòng
-            alignItems: 'center', 
-        },
-        image: {
-            width: '100%',
-            height: '60%', // Chiếm 60% chiều cao của card
-            borderTopLeftRadius: 10,
-            borderTopRightRadius: 10,
-            resizeMode: 'cover', 
-        },
-        title: {
-            fontSize: 16,
-            fontWeight: 'bold',
-            marginVertical: 10,
-            textAlign: 'center',
-            paddingHorizontal: 10, // Để tránh tràn ra ngoài
-        },
-        description: {
-            textAlign: 'center',
-            paddingHorizontal: 10, // Để tránh tràn ra ngoài
-            marginBottom: 10,
-        },
-        loadingContainer: {
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'white',
-        },
-        searchInput: {
-            flex: 1,
-            paddingLeft: 10,
-        },
-        titleContainer: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            padding: 16,
-            backgroundColor: 'purple',
-            paddingTop: 40,
-            paddingBottom: 20,
-        },
-        searchContainer: {
-            marginTop: 15,
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: 'white',
-            borderRadius: 20,
-            height: 40,
-            paddingHorizontal: 10,
-            width: '100%',
-        },
-    });
-    
 
     const renderItem = ({ item }) => (
         <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('Detail', { restaurantId: item.restaurantId })}>
@@ -143,7 +73,7 @@ const Product = ({ navigation }) => {
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="purple" />
+                <ActivityIndicator size="large" color="#ef4d2d" />
             </View>
         );
     }
@@ -176,5 +106,76 @@ const Product = ({ navigation }) => {
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#f8f8f8',
+    },
+    card: {
+        width: cardWidth,
+        height: 320, 
+        borderRadius: 10,
+        borderColor: '#000', 
+        margin: 5,
+        backgroundColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 2,
+        elevation: 1,
+        justifyContent: 'flex-start',
+        alignItems: 'center', 
+    },
+    image: {
+        width: '100%',
+        height: '60%',
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+        resizeMode: 'cover', 
+    },
+    title: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginVertical: 10,
+        textAlign: 'center',
+        paddingHorizontal: 10, // Để tránh tràn ra ngoài
+    },
+    description: {
+        textAlign: 'center',
+        paddingHorizontal: 10, // Để tránh tràn ra ngoài
+        marginBottom: 10,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white',
+    },
+    searchInput: {
+        flex: 1,
+        paddingLeft: 10,
+    },
+    titleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        backgroundColor: '#ef4d2d',
+        paddingTop: 40,
+        paddingBottom: 20,
+        marginBottom:10,
+    },
+    searchContainer: {
+        marginTop: 15,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        borderRadius: 20,
+        height: 40,
+        paddingHorizontal: 10,
+        width: '100%',
+    },
+});
+
 
 export default Product;

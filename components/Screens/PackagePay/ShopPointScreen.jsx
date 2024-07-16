@@ -50,12 +50,13 @@ const ShopPointScreen = ({ navigation }) => {
 
       const response = await axios.post(`https://instaeat.azurewebsites.net/api/Order/add-points?restaurantId=${restaurantId}&packageId=${packageId}`, {}, {
         headers: {
-          Authorization: `${token}`, // Ensure 'Bearer' prefix if required
+          Authorization: `${token}`, 
         },
       });
 
       if (response.status === 200) {
         Alert.alert('Success', 'Points added successfully');
+        navigation.goBack();
       } else {
         Alert.alert('Error', 'Failed to add points');
       }
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 5,
     paddingTop: 30,
-    backgroundColor: 'purple',
+    backgroundColor: '#ef4d2d',
     paddingBottom: 10,
   },
   headerContent: {

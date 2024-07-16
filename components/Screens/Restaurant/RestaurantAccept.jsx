@@ -39,8 +39,23 @@ const RestaurantAccept = ({ navigation }) => {
           // Filter reviews based on restaurantId
           const filteredReviews = response.data.items.filter(review => review.restaurantId === parseInt(restaurantId));
 
-          // Set filtered review data
-          setReviewData(filteredReviews);
+          // Fetch user names for each review
+          const reviewWithNames = await Promise.all(
+            filteredReviews.map(async review => {
+              const accountResponse = await axios.get(
+                `https://instaeat.azurewebsites.net/api/Account/${review.customerId}`,
+                {
+                  headers: {
+                    Authorization: `${userToken}`,
+                  },
+                }
+              );
+              const name = accountResponse.data.name;
+              return { ...review, name };
+            })
+          );
+
+          setReviewData(reviewWithNames);
         } else {
           throw new Error('Failed to fetch review data');
         }
@@ -59,7 +74,7 @@ const RestaurantAccept = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="purple" />
+        <ActivityIndicator size="large" color="#ef4d2d" />
       </View>
     );
   }
@@ -74,7 +89,7 @@ const RestaurantAccept = ({ navigation }) => {
             <Text style={styles.headerTitle}>Duyệt Review</Text>
           </TouchableOpacity>
         </View>
-        <Text>No review data available</Text>
+        <Text style={styles.review}>Không có review</Text>
       </View>
     );
   }
@@ -113,36 +128,39 @@ const RestaurantAccept = ({ navigation }) => {
       Alert.alert('Error', 'Failed to delete review. Please try again.');
     }
   };
+
   const acceptReview = async (reviewId) => {
-    try {
-      // Gửi request đến API để accept review với reviewId
-      const response = await axios.post(`https://instaeat.azurewebsites.net/api/Review/accept/${reviewId}`, {}, {
+  try {
+    // Send request to API to accept the review with reviewId
+    const response = await axios.post(
+      `https://instaeat.azurewebsites.net/api/Review/accept/${reviewId}`,
+      {},
+      {
         headers: {
           Authorization: token,
         },
-      });
-  
-      // Kiểm tra nếu accept thành công (status === 200)
-      if (response.status === 200) {
-        // Hiển thị thông báo nhận được điểm
-        Alert.alert('Success', 'Đã nhận được điểm từ review này.');
-  
-        // Cập nhật danh sách reviews sau khi accept
-        const updatedReviews = reviewData.filter(review => review.reviewId !== reviewId);
-        setReviewData(updatedReviews);
-      } else {
-        throw new Error('Failed to accept review');
       }
-    } catch (error) {
-      console.error('Error accepting review:', error);
-      Alert.alert('Error', 'Failed to accept review. Please try again.');
+    );
+    // Check if acceptance was successful (status === 200)
+    if (response.status === 200) {
+      Alert.alert('Success', 'Đã chuyển 5 điểm cho review này.');
+      const updatedReviews = reviewData.filter(review => review.reviewId !== reviewId);
+      setReviewData(updatedReviews);
+    } else {
+      Alert.alert('Thất bại', 'Không đủ điểm để chuyển cho Review này.');
+      throw new Error('Failed to Accept review');
     }
-  };
+  } catch (error) {
+    console.error('Error Accepting review:', error);
+    Alert.alert('Error', 'Failed to Accept review. Please try again.');
+  }
+};
+
   
-  // Render each review item with Accept, Reject buttons and image (if exists)
   const renderReviewItem = ({ item }) => (
     <View style={styles.reviewContainer}>
       <TouchableOpacity onPress={() => openImageModal(item.image)}>
+        <Text style={styles.customerId}>{item.name}</Text>
         <Text style={styles.content}>{item.content}</Text>
         {item.image && <Image source={{ uri: item.image }} style={styles.image} />}
       </TouchableOpacity>
@@ -157,6 +175,7 @@ const RestaurantAccept = ({ navigation }) => {
     </View>
   );
 
+  
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -194,6 +213,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor:'white',
   },
   reviewContainer: {
     borderWidth: 1,
@@ -201,16 +221,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     marginBottom: 20,
+    marginTop:10,
   },
   content: {
     fontSize: 16,
-    marginBottom: 10,
+    marginBottom: 2,
+    marginLeft: 20,
   },
   image: {
-    width: '100%',
-    height: 150,
-    resizeMode: 'cover',
-    marginTop: 10,
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+    marginLeft: 20,
   },
   modalContainer: {
     flex: 1,
@@ -225,15 +247,15 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: 10,
+    marginTop: 5,
   },
   button: {
-    paddingVertical: 10,
+    paddingVertical: 5,
     paddingHorizontal: 20,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: 100,
+    minWidth: 50,
   },
   acceptButton: {
     backgroundColor: 'green',
@@ -249,8 +271,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 8,
-    backgroundColor: 'purple',
-    paddingTop: 40,
+    backgroundColor: '#ef4d2d',
+    paddingTop: 50,
     paddingBottom: 20,
   },
   headerTitle: {
@@ -261,6 +283,18 @@ const styles = StyleSheet.create({
   backContainer: {
     flexDirection: 'row',
   },
-})
+  customerId:{
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'black',
+    marginBottom: 5,
+    marginLeft: 5,
+  },
+  review:{
+    textAlign:'center',
+    fontSize:18,
+    color:'#CCCCCC'
+  }
+});
 
 export default RestaurantAccept;

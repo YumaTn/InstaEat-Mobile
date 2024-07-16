@@ -17,13 +17,19 @@ const RestaurantNotification = () => {
   const fetchNotifications = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const storedRestaurantId = await AsyncStorage.getItem('restaurantId');
-      if (!token || !storedRestaurantId) {
-        Alert.alert('Error', 'Token or Restaurant ID not found.');
+      if (!token) {
+        Alert.alert('Error', 'Token not found.');
         return;
       }
 
-      // Fetch orders
+      // Fetch restaurant details from AsyncStorage
+      const storedRestaurantId = await AsyncStorage.getItem('restaurantId');
+      if (!storedRestaurantId) {
+        Alert.alert('Error', 'Restaurant ID not found in storage.');
+        return;
+      }
+
+      // Fetch orders for the specific restaurantId
       const ordersResponse = await axios.get('https://instaeat.azurewebsites.net/api/Order', {
         headers: {
           Authorization: `${token}`,
@@ -31,12 +37,14 @@ const RestaurantNotification = () => {
         params: {
           minDate: '1753-01-01',
           maxDate: '9999-12-31',
+          restaurantId: storedRestaurantId,
+          pageSize: 20,
         },
       });
 
       const ordersData = ordersResponse.data;
       const filteredNotifications = ordersData.items.filter(
-        (item) => item.restaurantId === parseInt(storedRestaurantId)
+        (item) => item.restaurantId.toString() === storedRestaurantId.toString()
       );
 
       // Fetch restaurant details
@@ -80,7 +88,7 @@ const RestaurantNotification = () => {
           <Text style={styles.notificationText}>{item.orderDate.toLocaleString()}</Text>
         </View>
         <View style={styles.rightSide}>
-          <Text style={styles.notificationColor}>{packageInfo.price}VNĐ</Text>
+          <Text style={styles.notificationColor}>{packageInfo.price} VNĐ</Text>
           <Text style={styles.notificationColor}>+ {packageInfo.point} điểm</Text>
         </View>
       </View>
@@ -90,8 +98,8 @@ const RestaurantNotification = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="purple" />
-            </View>
+        <ActivityIndicator size="large" color="#ef4d2d" />
+      </View>
     );
   }
 
@@ -128,7 +136,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 5,
     paddingTop: 30,
-    backgroundColor: 'purple',
+    backgroundColor: '#ef4d2d',
   },
   headerText: {
     padding: 20,
@@ -167,8 +175,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
-},
+    backgroundColor: 'white', 
+  },
 });
 
 export default RestaurantNotification;

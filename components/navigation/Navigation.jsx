@@ -8,7 +8,7 @@ import Profile from '../Screens/Profile.jsx';
 
 const Tab = createBottomTabNavigator();
 
-const App = () => {
+const Navigation = () => {
   return (
     <Tab.Navigator
     screenOptions={{
@@ -18,7 +18,7 @@ const App = () => {
         position: 'absolute',
         borderTopLeftRadius: 15,
         borderTopRightRadius: 15,
-        backgroundColor: 'purple',
+        backgroundColor: '#ef4d2d',
         shadowColor: '#000',
         shadowOffset: {
           width: 0,
@@ -64,4 +64,4 @@ const App = () => {
   );
 };
  
-export default App;
+export default Navigation;

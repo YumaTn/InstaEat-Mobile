@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert, ActivityIndicator, Modal } from 'react-native';
 import { FontAwesome5, AntDesign } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -14,26 +14,30 @@ const RestaurantHome = ({ navigation }) => {
   const [reviewData, setReviewData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [imageCount, setImageCount] = useState(0); 
-  const [contentCount, setContentCount] = useState(0); 
-
+  const [imageCount, setImageCount] = useState(0);
+  const [contentCount, setContentCount] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
-        
-        if (!token) {
-          throw new Error('User token not found');
+        const restaurantId = await AsyncStorage.getItem('restaurantId');
+
+        if (!token || !restaurantId) {
+          throw new Error('User token or Restaurant ID not found');
         }
 
         // Fetch restaurant details
-        const restaurantResponse = await axios.get(`https://instaeat.azurewebsites.net/api/Restaurant`, {
+        const restaurantResponse = await axios.get(`https://instaeat.azurewebsites.net/api/Restaurant/${restaurantId}`, {
           headers: {
             Authorization: `${token}`,
           },
         });
-        const fetchedRestaurant = restaurantResponse.data.items[0]; 
+        const fetchedRestaurant = restaurantResponse.data;
         setRestaurantDetails(fetchedRestaurant);
+
 
         // Fetch reviews based on restaurantId and status
         const reviewsResponse = await axios.get(`https://instaeat.azurewebsites.net/api/Review/restaurant?status=1`, {
@@ -43,15 +47,34 @@ const RestaurantHome = ({ navigation }) => {
         });
 
         if (reviewsResponse.status === 200) {
-          // Filter reviews based on restaurantId (replace with correct restaurantId logic)
-          const filteredReviews = reviewsResponse.data.items.filter(review => review.restaurantId === fetchedRestaurant.restaurantId);
-          setReviewData(filteredReviews);
+          // Filter reviews based on restaurantId
+          const filteredReviews = reviewsResponse.data.items.filter(
+            review => review.restaurantId === fetchedRestaurant.restaurantId
+          );
+
+          // Get names for each review
+          const reviewWithNames = await Promise.all(
+            filteredReviews.map(async review => {
+              const accountResponse = await axios.get(
+                `https://instaeat.azurewebsites.net/api/Account/${review.customerId}`,
+                {
+                  headers: {
+                    Authorization: `${token}`,
+                  },
+                }
+              );
+              const name = accountResponse.data.name;
+              return { ...review, name };
+            })
+          );
+
+          setReviewData(reviewWithNames);
 
           // Count images and content
           let imageCount = 0;
           let contentCount = 0;
 
-          filteredReviews.forEach(review => {
+          reviewWithNames.forEach(review => {
             if (review.image) {
               imageCount++;
             }
@@ -62,24 +85,18 @@ const RestaurantHome = ({ navigation }) => {
 
           setImageCount(imageCount);
           setContentCount(contentCount);
+          const pendingReviewsResponse = await axios.get(`https://instaeat.azurewebsites.net/api/Review/restaurant?status=0`, {
+          headers: {
+            Authorization: `${token}`,
+          },
+        });
+        if (pendingReviewsResponse.status === 200) {
+          const pendingReviewsCount = pendingReviewsResponse.data.items.filter(
+            review => review.restaurantId === fetchedRestaurant.restaurantId
+          ).length;
+          setPendingReviewsCount(pendingReviewsCount);
+        }
 
-          // Extract customerId from the first review (assuming it's available)
-          const customerId = filteredReviews.length > 0 ? filteredReviews[0].customerId : null;
-
-          // Fetch username from Account API if customerId matches userId
-          if (customerId) {
-            const accountResponse = await axios.get(`https://instaeat.azurewebsites.net/api/Account/${customerId}`, {
-              headers: {
-                Authorization: `${token}`,
-              },
-            });
-            if (accountResponse.status === 200) {
-              const username = accountResponse.data.username;
-              console.log('Username:', username);
-            } else {
-              throw new Error('Failed to fetch username');
-            }
-          }
         } else {
           throw new Error('Failed to fetch review data');
         }
@@ -99,11 +116,21 @@ const RestaurantHome = ({ navigation }) => {
     return () => clearInterval(interval);
   }, []);
 
+  const openModal = (image) => {
+    setSelectedImage(image);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setSelectedImage(null);
+    setModalVisible(false);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="purple" />
-            </View>
+        <ActivityIndicator size="large" color="#ef4d2d" />
+      </View>
     );
   }
 
@@ -120,16 +147,21 @@ const RestaurantHome = ({ navigation }) => {
       <View style={styles.headerContainer}>
         <Text style={styles.header}>{restaurantDetails.restaurantName}</Text>
         <View style={styles.funcContainer}>
-          <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('RAccept')}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('RAccept')}>
+        {pendingReviewsCount > 0 && (
+            <View style={styles.notificationBadge}>
+            <Text style={styles.notificationText}>{pendingReviewsCount}</Text>
+            </View>
+            )}
             <AntDesign name="notification" size={24} color="white" />
-          </TouchableOpacity>
+        </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('ShopPoint')}>
             <FontAwesome5 name="coins" size={22} color="white" />
           </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView>
+      <ScrollView >
         <Image style={styles.image} source={require('../../../assets/images/background.jpg')} />
         <Text style={styles.titleRestaurant}>{restaurantDetails.restaurantName}</Text>
 
@@ -148,21 +180,37 @@ const RestaurantHome = ({ navigation }) => {
           <Text style={styles.openAndOffClock}>
             {restaurantDetails.openTime} - {restaurantDetails.closeTime}
           </Text>
-          <Text><Text style={styles.address}>Địa chỉ:</Text>{restaurantDetails.address}</Text>
+          <Text>
+            <Text style={styles.address}>Địa chỉ:</Text>
+            {restaurantDetails.address}
+          </Text>
         </View>
         <View style={styles.empty}></View>
         <View>
-          <Text style={styles.customer}>Bình Luận:</Text>
+          <Text style={styles.customer}>{contentCount} bình Luận</Text>
           {reviewData.map((item, index) => (
             <View key={index} style={styles.reviewContainer}>
-              <TouchableOpacity>
+              <View>
+                <Text style={styles.customerId}>{item.name}:</Text>
                 <Text style={styles.content}>{item.content}</Text>
-                {item.image && <Image source={{ uri: item.image }} style={styles.reviewImage} />}
-              </TouchableOpacity>
+                {item.image && (
+                  <TouchableOpacity onPress={() => openModal(item.image)}>
+                    <Image source={{ uri: item.image }} style={styles.reviewImage} />
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           ))}
         </View>
       </ScrollView>
+
+      {selectedImage && (
+        <Modal visible={modalVisible} transparent={true} animationType="fade" onRequestClose={closeModal}>
+          <TouchableOpacity style={styles.modalContainer} onPress={closeModal}>
+            <Image source={{ uri: selectedImage }} style={styles.modalImage} />
+          </TouchableOpacity>
+        </Modal>
+      )}
     </View>
   );
 };
@@ -171,13 +219,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
+    paddingBottom:100,
   },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 20,
     paddingTop: 50,
-    backgroundColor: 'purple',
+    backgroundColor: '#ef4d2d',
   },
   header: {
     fontSize: 20,
@@ -195,13 +244,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     resizeMode: 'cover',
-    marginBottom: 10,
   },
   titleRestaurant: {
     fontSize: 16,
     padding: 10,
-    borderWidth: 1,
-    borderColor: 'gray',
+    borderWidth:1,
+    borderColor: '#CCCCCC',
     fontWeight: 'bold',
   },
   info: {
@@ -209,7 +257,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'gray',
+    borderBottomColor: '#CCCCCC',
   },
   detailInfo: {
     alignItems: 'center',
@@ -243,23 +291,62 @@ const styles = StyleSheet.create({
   },
   reviewContainer: {
     marginVertical: 10,
+    borderTopWidth: 1,
+    borderColor: '#CCCCCC',
+  },
+  customerId: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'black',
+    marginBottom: 5,
+    marginLeft: 10,
   },
   content: {
     fontSize: 16,
     marginBottom: 2,
+    marginLeft: 20,
   },
   reviewImage: {
-    width: '100%',
-    height: 200,
-    resizeMode: 'cover',
-    borderRadius: 10,
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+    marginLeft: 20,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
-},
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },  
+  modalImage: {
+    width: 400,
+    height: 400,
+    resizeMode: 'cover',
+  },
+  notificationText:{
+    color: 'white',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 0,
+    top:-2
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -10,
+    right: -10,
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'red',
+  }
 });
 
 export default RestaurantHome;

@@ -20,7 +20,7 @@ const RestaurantNavigation = (route ) => {
         position: 'absolute',
         borderTopLeftRadius: 15,
         borderTopRightRadius: 15,
-        backgroundColor: 'purple',
+        backgroundColor: '#ef4d2d',
         shadowColor: '#000',
         shadowOffset: {
           width: 0,
