@@ -108,7 +108,6 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     paddingTop: 30,
     backgroundColor: '#ef4d2d',
-    paddingBottom: 10,
   },
   headerContent: {
     alignItems: 'flex-start',

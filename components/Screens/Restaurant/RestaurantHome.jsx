@@ -19,6 +19,7 @@ const RestaurantHome = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -37,7 +38,6 @@ const RestaurantHome = ({ navigation }) => {
         });
         const fetchedRestaurant = restaurantResponse.data;
         setRestaurantDetails(fetchedRestaurant);
-
 
         // Fetch reviews based on restaurantId and status
         const reviewsResponse = await axios.get(`https://instaeat.azurewebsites.net/api/Review/restaurant?status=1`, {
@@ -85,18 +85,18 @@ const RestaurantHome = ({ navigation }) => {
 
           setImageCount(imageCount);
           setContentCount(contentCount);
-          const pendingReviewsResponse = await axios.get(`https://instaeat.azurewebsites.net/api/Review/restaurant?status=0`, {
-          headers: {
-            Authorization: `${token}`,
-          },
-        });
-        if (pendingReviewsResponse.status === 200) {
-          const pendingReviewsCount = pendingReviewsResponse.data.items.filter(
-            review => review.restaurantId === fetchedRestaurant.restaurantId
-          ).length;
-          setPendingReviewsCount(pendingReviewsCount);
-        }
 
+          const pendingReviewsResponse = await axios.get(`https://instaeat.azurewebsites.net/api/Review/restaurant?status=0`, {
+            headers: {
+              Authorization: `${token}`,
+            },
+          });
+          if (pendingReviewsResponse.status === 200) {
+            const pendingReviewsCount = pendingReviewsResponse.data.items.filter(
+              review => review.restaurantId === fetchedRestaurant.restaurantId
+            ).length;
+            setPendingReviewsCount(pendingReviewsCount);
+          }
         } else {
           throw new Error('Failed to fetch review data');
         }
@@ -115,6 +115,37 @@ const RestaurantHome = ({ navigation }) => {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const checkAndDeleteOldReviews = async () => {
+      try {
+        // Get current timestamp
+        const currentTimestamp = Date.now();
+
+        // Iterate through reviewData and delete reviews older than 7 days
+        const updatedReviewData = reviewData.filter(review => {
+          // Calculate difference in milliseconds
+          const reviewTimestamp = Date.parse(review.createdAt); // Replace with your review creation time
+          const difference = currentTimestamp - reviewTimestamp;
+
+          // Convert milliseconds to days
+          const daysDifference = difference / (1000 * 3600 * 24);
+
+          // If review is less than 7 days old, keep it
+          return daysDifference <= 7;
+        });
+
+        setReviewData(updatedReviewData);
+      } catch (error) {
+        console.error('Error checking and deleting old reviews:', error);
+      }
+    };
+
+    // Run checkAndDeleteOldReviews every 7 days (7 * 24 * 60 * 60 * 1000 milliseconds)
+    const reviewCleanupInterval = setInterval(checkAndDeleteOldReviews, 7 * 24 * 60 * 60 * 1000);
+
+    return () => clearInterval(reviewCleanupInterval);
+  }, [reviewData]);
 
   const openModal = (image) => {
     setSelectedImage(image);
@@ -147,21 +178,21 @@ const RestaurantHome = ({ navigation }) => {
       <View style={styles.headerContainer}>
         <Text style={styles.header}>{restaurantDetails.restaurantName}</Text>
         <View style={styles.funcContainer}>
-        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('RAccept')}>
-        {pendingReviewsCount > 0 && (
+          {pendingReviewsCount > 0 && (
             <View style={styles.notificationBadge}>
-            <Text style={styles.notificationText}>{pendingReviewsCount}</Text>
+              <Text style={styles.notificationText}>{pendingReviewsCount}</Text>
             </View>
-            )}
+          )}
+          <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('RAccept')}>
             <AntDesign name="notification" size={24} color="white" />
-        </TouchableOpacity>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('ShopPoint')}>
             <FontAwesome5 name="coins" size={22} color="white" />
           </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView >
+      <ScrollView>
         <Image style={styles.image} source={require('../../../assets/images/background.jpg')} />
         <Text style={styles.titleRestaurant}>{restaurantDetails.restaurantName}</Text>
 
@@ -246,16 +277,17 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   titleRestaurant: {
-    fontSize: 16,
-    padding: 10,
-    borderWidth:1,
-    borderColor: '#CCCCCC',
+    fontSize: 24,
     fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 10,
   },
   info: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 10,
+    borderTopWidth:1,
+    borderTopColor:'#CCCCCC',
     borderBottomWidth: 1,
     borderBottomColor: '#CCCCCC',
   },
@@ -276,77 +308,72 @@ const styles = StyleSheet.create({
   openAndOffClock: {
     color: 'gray',
   },
-  empty: {
-    height: 10,
-    backgroundColor: '#CCCCCC',
-  },
   address: {
-    paddingTop: 10,
     fontWeight: 'bold',
+    color: '#666',
+  },
+  empty: {
+    backgroundColor: '#CCCCCC',
+    height: 8,
+    marginTop: 15,
   },
   customer: {
+    padding: 15,
+    paddingLeft: 20,
     fontSize: 16,
-    fontWeight: 'bold',
-    padding: 10,
-  },
-  reviewContainer: {
-    marginVertical: 10,
-    borderTopWidth: 1,
-    borderColor: '#CCCCCC',
+    fontWeight:'bold'
   },
   customerId: {
-    fontSize: 18,
     fontWeight: 'bold',
-    color: 'black',
-    marginBottom: 5,
-    marginLeft: 10,
   },
   content: {
-    fontSize: 16,
-    marginBottom: 2,
-    marginLeft: 20,
+    paddingBottom: 10,
+  },
+  reviewContainer: {
+    padding: 10,
+    marginBottom: 10,
+    borderTopWidth:1,
+    borderColor:'#CCCCCC'
   },
   reviewImage: {
-    width: 100,
-    height: 100,
+    width: 150,
+    height: 150,
     resizeMode: 'contain',
-    marginLeft: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalImage: {
+    width: '90%',
+    height: '90%',
+    resizeMode: 'contain',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },  
-  modalImage: {
-    width: 400,
-    height: 400,
-    resizeMode: 'cover',
-  },
-  notificationText:{
-    color: 'white',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    marginLeft: 0,
-    top:-2
+    backgroundColor:'white'
   },
   notificationBadge: {
     position: 'absolute',
     top: -10,
     right: -10,
-    minWidth: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: 'red',
-  }
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  notificationText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
 });
 
 export default RestaurantHome;

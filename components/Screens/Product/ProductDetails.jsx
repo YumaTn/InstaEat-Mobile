@@ -152,6 +152,7 @@ const ProductDetails = ({ navigation, route }) => {
               {restaurantDetails.address}
             </Text>
           </View>
+          <View style={styles.empty}></View>
           <View style={styles.commentContainer}>
             <Text style={styles.commentUser}>{commentCount} bình luận</Text>
             {reviews.map((review, index) => (
@@ -229,6 +230,7 @@ const styles = StyleSheet.create({
   },
   info: {
     borderBottomWidth: 1,
+    borderTopWidth: 1,
     borderColor: '#CCCCCC',
     padding: 10,
     flexDirection: 'row',
@@ -247,11 +249,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tilteRestaurant: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#CCCCCC',
-    fontSize: 16,
+    fontSize: 24,
     fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 10,
+    borderBottomWidth:1,
   },
   OpenAndOff: {
     padding: 15,
@@ -270,8 +272,6 @@ const styles = StyleSheet.create({
   commentContainer: {
     padding: 10,
     marginTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#CCCCCC',
   },
   commentItem: {
     marginVertical: 10,
@@ -322,6 +322,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
+  },
+  empty: {
+    backgroundColor: '#CCCCCC',
+    height: 8,
+    marginTop: 15,
   },
 });
 

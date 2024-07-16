@@ -63,7 +63,7 @@ const Wallet = ({ navigation }) => {
         <Text style={styles.headerTitle}>Wallet</Text>
       </View>
       <View>
-        <Text style={styles.textTitleWallet}>Tài khoản tín dụng của bạn</Text>
+        <Text style={styles.textTitleWallet}>Ví điểm của bạn</Text>
         <Text style={styles.point}>{totalPoint !== null ? totalPoint : 'N/A'}</Text>
       </View>
     </View>

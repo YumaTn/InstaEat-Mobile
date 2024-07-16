@@ -30,13 +30,13 @@ const PlashScreen = ({ navigation }) => {
   }, [navigation]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center',backgroundColor:'white' }}>
       <LottieView
         source={loader}
         autoPlay
         loop
         resizeMode="cover" 
-        style={{ width: '100%', height: '100%' }} 
+        style={{ width: 600, height: 600 }} 
       />
     </View>
   );
