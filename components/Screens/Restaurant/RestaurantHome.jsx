@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   notificationBadge: {
     position: 'absolute',
     top: -10,
-    right: -10,
+    right: 30,
     backgroundColor: 'red',
     borderRadius: 10,
     width: 20,

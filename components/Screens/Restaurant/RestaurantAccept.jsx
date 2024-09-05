@@ -10,7 +10,7 @@ const RestaurantAccept = ({ navigation }) => {
   const [token, setToken] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
-
+  
   useEffect(() => {
     const fetchReviewData = async () => {
       try {
